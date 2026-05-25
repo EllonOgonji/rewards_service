@@ -25,6 +25,3 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 rewards_service-*.tar
 
-# ElixirLS
-/.elixir_ls/
-
