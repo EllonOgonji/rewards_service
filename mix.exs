@@ -50,7 +50,9 @@ defmodule RewardsService.MixProject do
       {:phoenix_swagger, "~> 0.8"},
       {:ex_json_schema, "~> 0.9"},
       {:hammer, "~> 6.1"},
-      {:mox, "~> 1.0", only: :test}
+      {:mox, "~> 1.0", only: :test},
+      {:ex_machina, "~> 2.7", only: :test},
+      {:stream_data, "~> 0.6", only: :test}
     ]
   end
 

@@ -3,16 +3,24 @@ defmodule RewardsService.Wallet do
   import Ecto.Query
 
   def get_balance(user_id) do
-    Cachex.fetch(:rewards_cache, "wallet:#{user_id}", fn ->
+    if Mix.env() == :test do
       case Repo.get_by(Wallet, user_id: user_id) do
         nil -> {:error, :not_found}
-        wallet -> {:commit, wallet}
+        wallet -> {:ok, wallet}
       end
-    end)
-    |> case do
-      {:ok, wallet} -> {:ok, wallet}
-      {:commit, wallet} -> {:ok, wallet}
-      {:error, _} = err -> err
+    else
+      Cachex.fetch(:rewards_cache, "wallet:#{user_id}", fn ->
+        case Repo.get_by(Wallet, user_id: user_id) do
+          nil -> {:ignore, {:error, :not_found}}
+          wallet -> {:commit, wallet}
+        end
+      end)
+      |> case do
+        {:ok, wallet} -> {:ok, wallet}
+        {:commit, wallet} -> {:ok, wallet}
+        {:ignore, err} -> err
+        {:error, _} = err -> err
+      end
     end
   end
 

@@ -27,6 +27,10 @@ config :rewards_service, Oban,
   repo: RewardsService.Repo,
   queues: [rewards: 10]
 
+# Hammer Rate Limiter configuration
+config :hammer,
+  backend: {Hammer.Backend.ETS, [expiry_ms: 60_000 * 60 * 4, cleanup_interval_ms: 60_000 * 10]}
+
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails

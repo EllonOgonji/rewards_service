@@ -10,14 +10,16 @@ defmodule RewardsService.Rewards do
   def earn_points(user_id, reason, metadata \\ %{}) do
     points = calculate_points(reason, metadata)
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:transaction, %Transaction{
+    changeset = Transaction.changeset(%Transaction{}, %{
       user_id: user_id,
       type: "earn",
       points: points,
       reason: reason,
       metadata: metadata
     })
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:transaction, changeset)
     |> Ecto.Multi.run(:wallet, fn repo, _ ->
       Wallet.increment_points(repo, user_id, points)
     end)
@@ -39,14 +41,16 @@ defmodule RewardsService.Rewards do
          :ok <- check_sufficient_points(balance.balance_points, points_to_redeem) do
       ksh_credit = Decimal.mult(points_to_redeem, @points_to_ksh_rate)
 
-      Ecto.Multi.new()
-      |> Ecto.Multi.insert(:transaction, %Transaction{
+      changeset = Transaction.changeset(%Transaction{}, %{
         user_id: user_id,
         type: "redeem",
         points: points_to_redeem,
         reason: "redemption",
         metadata: %{ksh_credited: ksh_credit}
       })
+
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(:transaction, changeset)
       |> Ecto.Multi.run(:wallet, fn repo, _ ->
         Wallet.deduct_points_and_credit_ksh(repo, user_id, points_to_redeem, ksh_credit)
       end)
